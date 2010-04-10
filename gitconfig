@@ -1,0 +1,29 @@
+[alias]
+	gitk    = log --pretty=oneline --abbrev-commit --graph --decorate --all
+	unco    = checkout HEAD --
+	unstage = reset HEAD --
+[apply]
+	whitespace = strip
+[clean]
+	requireForce = true
+[color]
+	branch = auto
+	diff   = auto
+	status = auto
+	ui     = auto
+[color "diff"]
+	whitespace = red reverse
+[core]
+	whitespace=fix,-indent-with-non-tab,trailing-space,cr-at-eol
+[diff]
+	renames = copies
+[format]
+	numbered      = auto
+	subjectprefix = PATCH
+	suffix        = .txt
+[showbranch]
+	default = --topo-order
+	default = heads/*
+[user]
+	email = <Your email address>
+	name  = <Your name>

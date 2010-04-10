@@ -1,0 +1,65 @@
+#!/bin/sh
+
+# Use case:
+#
+# You are working on multiple git branches all of which are a branch
+# of some common master (perhaps you are on a dev branch of your github
+# fork while also tracking the fork's master).
+# You wish to easily update all the branches.  Consider:
+#
+# $ git freshen --fetch main \
+#      main-tracker main/master master main-tracker dev master
+#
+# You've just done the following:
+#
+#   git fetch main
+#   git checkout main-tracker
+#   git merge --ff-only main/master
+#   git checkout master
+#   git merge --ff-only main-tracker
+#   git checkout dev
+#   git merge --ff-only master
+#   git checkout <current branch when `git freshen' was run>
+#
+
+case $1 in
+ --fetch)
+	git fetch $2
+	shift 2
+	;;
+esac
+
+if [ $# -lt 2 ]; then
+        cat 1>&2 <<USAGE
+git-freshen [--fetch remote] (branch commit)+ [finish-branch]
+
+   Fetches *remote* if instructed.  Checks out each *branch* and
+   merges in the associated *commit*.  Returns you to your original
+   branch or *finish-branch*.  If any merge is not a fast-forward
+   then dies at that point without having done the merge.
+USAGE
+	exit 1
+fi
+
+orig=`git branch | egrep '^\*' | cut -d ' ' -f 2`
+
+[ $1 != $orig ] && git checkout $1
+
+while [ $# -gt 1 ]; do
+	git merge --ff-only $2
+
+        if [ $? = 0 ]; then
+            shift 2
+        else
+            echo "   Tried to merge $2 into $1." >&2
+            break
+        fi
+
+	[ $# != 0 ] && git checkout $1
+done
+
+current=`git branch | egrep '^\*' | cut -d ' ' -f 2`
+
+[ $# = 0 -a $current != $orig ] && git checkout $orig
+
+##__END__
